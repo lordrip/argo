@@ -73,6 +73,22 @@ System-prompt-capable models like `gpt-4o-mini-tts` support an `instructions` fi
 engines.openai({ model: 'gpt-4o-mini-tts', instructions: 'Speak warmly like a product demo narrator.' })
 ```
 
+### OpenAI-Compatible Servers (`baseUrl`, `timeoutMs`)
+
+`engines.openai()` also talks to any server implementing OpenAI's `POST /v1/audio/speech` (e.g. Kokoro-FastAPI, a CosyVoice server):
+
+```javascript
+engines.openai({
+  baseUrl: 'http://localhost:8881/v1', // include /v1
+  model: 'my-model',
+  timeoutMs: 600_000, // slow local servers
+})
+```
+
+- With `baseUrl` set, `OPENAI_API_KEY` is never read — an OpenAI key is not leaked to another server. Pass `apiKey` if the server needs one.
+- With `openai` >= 5, requests still fail after ~300 s without response headers (Node `fetch`'s `headersTimeout`), regardless of `timeoutMs`. `openai` 4 honours longer timeouts.
+- `baseUrl` is recorded in `<demo>.meta.json` but is not part of the clip cache key — clear `.argo/<demo>/clips` after switching servers.
+
 ---
 
 ## Voice Cloning (mlx-audio)
